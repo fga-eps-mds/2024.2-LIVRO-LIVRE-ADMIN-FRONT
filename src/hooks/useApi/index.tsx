@@ -45,7 +45,7 @@ const useApi = () => {
     getUsers: (data: {
       perPage: number;
       page: number
-    }): Promise<{ data: {
+    }, token: string | null): Promise<{ data: {
       items: User[],
       total: number,
     } }> => {
@@ -55,6 +55,9 @@ const useApi = () => {
             params: {
               perPage: data.perPage,
               page: data.page,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
             }
           })
           .then((res) => resolve(res))

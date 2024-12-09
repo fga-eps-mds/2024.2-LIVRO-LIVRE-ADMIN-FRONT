@@ -9,6 +9,7 @@ import {
   PaginationPrevTrigger,
   PaginationRoot,
 } from "../../components/ui/pagination";
+import { useAuth } from '../../hooks/useAuth';
 
 function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -16,9 +17,10 @@ function Users() {
   const [page, setPage] = useState(1);
 
   const { getUsers } = useApi();
+  const { token } = useAuth();
 
   const fetchUsers = async () => {
-    const { data } = await getUsers({ perPage: 10, page: page - 1 });
+    const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
     setUsers(data.items);
     setUsersCount(data.total);
   }
