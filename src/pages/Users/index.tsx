@@ -38,7 +38,6 @@ function Users() {
             <Table.Root size="lg" variant='outline' striped showColumnBorder>
               <Table.Header>
                 <Table.Row>
-                  <Table.ColumnHeader>id</Table.ColumnHeader>
                   <Table.ColumnHeader>Nome</Table.ColumnHeader>
                   <Table.ColumnHeader>Sobrenome</Table.ColumnHeader>
                   <Table.ColumnHeader>Telefone</Table.ColumnHeader>
@@ -50,7 +49,6 @@ function Users() {
               <Table.Body>
                 {users.map((user) => (
                   <Table.Row key={user.id}>
-                    <Table.Cell>{user.id}</Table.Cell>
                     <Table.Cell>{user.firstName}</Table.Cell>
                     <Table.Cell>{user.lastName}</Table.Cell>
                     <Table.Cell>{user.phone}</Table.Cell>
