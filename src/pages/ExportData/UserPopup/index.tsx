@@ -1,26 +1,26 @@
-import { Box, Flex, HStack, Stack, Table, Input } from '@chakra-ui/react';
+import { Box,  HStack, Stack, Table, Input } from '@chakra-ui/react';
 import { Checkbox } from "../../../components/ui/checkbox"
 import useApi from '../../../hooks/useApi';
 import { useEffect, useState } from 'react';
 import { User } from '../../../interfaces/user';
 import {
-  PaginationItems,
-  PaginationNextTrigger,
-  PaginationPrevTrigger,
-  PaginationRoot,
+    PaginationItems,
+    PaginationNextTrigger,
+    PaginationPrevTrigger,
+    PaginationRoot,
 } from "../../../components/ui/pagination";
 import { useAuth } from '../../../hooks/useAuth';
 import { InputGroup } from '../../../components/ui/input-group';
 import { IoSearchOutline } from "react-icons/io5";
 
 const MockUsers = Array.from({ length: 30 }, (_, i) => ({
-  id: `${i + 1}`,
-  firstName: `Nome ${i + 1}`,
-  lastName: `Sobrenome ${i + 1}`,
-  phone: `Telefone ${i + 1}`,
-  email: `email${i + 1}@email.com`,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+    id: `${i + 1}`,
+    firstName: `Nome ${i + 1}`,
+    lastName: `Sobrenome ${i + 1}`,
+    phone: `Telefone ${i + 1}`,
+    email: `email${i + 1}@email.com`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
 }));
 
 function UserPopup() {
@@ -43,15 +43,15 @@ function UserPopup() {
   // const { token } = useAuth();
 
 
-  // const fetchUsers = async () => {
-  //   const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
-  //   setUsers(data.items);
-  //   setUsersCount(data.total);
-  // }
+    // const fetchUsers = async () => {
+    //   const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
+    //   setUsers(data.items);
+    //   setUsersCount(data.total);
+    // }
 
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, [page]);
+    // useEffect(() => {
+    //   fetchUsers();
+    // }, [page]);
 
   
   
@@ -112,8 +112,7 @@ function UserPopup() {
   ))
 
   return (
-    <Box height='100vh'>
-      <Flex height='100%'>
+
         <Box padding='40px'>
           <Stack>
             <InputGroup flex="0.85" startElement={<IoSearchOutline />}>
@@ -170,9 +169,7 @@ function UserPopup() {
             </PaginationRoot>
           </Stack>
         </Box>
-      </Flex>
-    </Box>
-  );
+    );
 }
 
 export default UserPopup
