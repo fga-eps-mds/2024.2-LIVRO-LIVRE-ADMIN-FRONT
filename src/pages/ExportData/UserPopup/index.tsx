@@ -24,20 +24,24 @@ const MockUsers = Array.from({ length: 30 }, (_, i) => ({
 }));
 
 function UserPopup() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [usersCount, setUsersCount] = useState(0);
-  const [page, setPage] = useState(1);
+  // const [users, setUsers] = useState<User[]>([]);
+  // const [usersCount, setUsersCount] = useState(0);
+  // const [page, setPage] = useState(1);
 
-  const [showMockUsers, setShowMockUsers] = useState<User[]>([]);
-  const [mockUsersCount, setMockUsersCount] = useState(MockUsers.length);
-  const [mockPage, setMockPage] = useState(1);
-
-  const { getUsers } = useApi();
-  const { token } = useAuth();
-
+  const [filteredUsers, setFilteredUsers] = useState(MockUsers); //~ variavel que guarda o array dos usuários filtrados
+  const [showMockUsers, setShowMockUsers] = useState<User[]>([]); //~ variavel que atualizará o array para mostrar somente 10 items por pagina
+  const [mockPage, setMockPage] = useState(1);  //~ variavel que guarda o valor 1 que será a pagina 1 e depois sera atualizado quando trocar a pagina
+  
+  const [inputValue, setInputValue] = useState(''); //~ variavel que guard o valor do input
+  
   const [selection, setSelection] = useState<string[]>([])
   const hasSelection = selection.length > 0
-  const indeterminate = hasSelection && selection.length < MockUsers.length
+  const indeterminate = hasSelection && selection.length < showMockUsers.length
+  
+
+  // const { getUsers } = useApi();
+  // const { token } = useAuth();
+
 
   // const fetchUsers = async () => {
   //   const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
@@ -49,42 +53,61 @@ function UserPopup() {
   //   fetchUsers();
   // }, [page]);
 
-  const MockfetchUsers = () => {
-    const startIndex = (mockPage - 1) * 10;
-    const endIndex = startIndex + 10;
-    const paginatedUsers = MockUsers.slice(startIndex, endIndex);
-    setShowMockUsers(paginatedUsers);
+  
+  
+  const handlePageChange = (page: number) => { //~ funçõ que atualiza o mokpage quando o valor no pagination muda
+    setMockPage(page);
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {  //~ função que atualiza a variavel inputvalue quando o valor do input muda
+    setInputValue(e.target.value);
   };
 
-  useEffect(() => {
-    MockfetchUsers();
-  }, [mockPage]);
+  
+  useEffect(() => {  //~ calcula o indice de começo e de fim do array pela pagina que está 
+    const startIndex = (mockPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    const paginatedUsers = filteredUsers.slice(startIndex, endIndex); ///~ corta o array a partir do array filtrado 
+    setShowMockUsers(paginatedUsers); //~ atualiza o array depois de cortar o que não pertence a pagina que está
+  }, [filteredUsers, mockPage]);
 
-  const rows = showMockUsers.map((MockUsers) => (
+  useEffect(() => {  
+    const lowerCaseInput = inputValue.toLowerCase(); //~ transforma em minusculo o input
+    const filtered = MockUsers.filter(  //~ filtra o array de users de acordo com os valores do input
+        user =>
+            user.firstName.toLowerCase().includes(lowerCaseInput) ||
+            user.lastName.toLowerCase().includes(lowerCaseInput) ||
+            user.email.toLowerCase().includes(lowerCaseInput)
+    );
+    setFilteredUsers(filtered); //~ atualiza o valor do array que será renderizado
+    setMockPage(1); //~ Voltar para a primeira página ao filtrar
+    //^ if (filtered.length === 0) aviso nao encontrou a busca; 
+}, [inputValue]);
+  const rows = showMockUsers.map((users) => (
     <Table.Row
-      key={MockUsers.id}
-      data-selected={selection.includes(MockUsers.email) ? "" : undefined}
+      key={users.id}
+      data-selected={selection.includes(users.email) ? "" : undefined}
     >
       <Table.Cell>
         <Checkbox
           top="1"
           aria-label="Select row"
-          checked={selection.includes(MockUsers.email)}
+          checked={selection.includes(users.email)}
           onCheckedChange={(changes) => {
             setSelection((prev) =>
               changes.checked
-                ? [...prev, MockUsers.email]
-                : selection.filter((email) => email !== MockUsers.email),
+                ? [...prev, users.email]
+                : prev.filter((email) => email !== users.email),
             )
           }}
         />
       </Table.Cell>
-      <Table.Cell>{MockUsers.firstName}</Table.Cell>
-      <Table.Cell>{MockUsers.lastName}</Table.Cell>
-      <Table.Cell>{MockUsers.phone}</Table.Cell>
-      <Table.Cell>{MockUsers.email}</Table.Cell>
-      <Table.Cell>{MockUsers.createdAt}</Table.Cell>
-      <Table.Cell>{MockUsers.updatedAt}</Table.Cell>
+      <Table.Cell>{users.firstName}</Table.Cell>
+      <Table.Cell>{users.lastName}</Table.Cell>
+      <Table.Cell>{users.phone}</Table.Cell>
+      <Table.Cell>{users.email}</Table.Cell>
+      <Table.Cell>{users.createdAt}</Table.Cell>
+      <Table.Cell>{users.updatedAt}</Table.Cell>
     </Table.Row>
   ))
 
@@ -97,6 +120,9 @@ function UserPopup() {
               <Input
                 type="text"
                 placeholder="Digite o nome do usuário."
+                value={inputValue}
+                onChange={handleInputChange}
+                // onKeyDown={handleKeyDown}
               />
             </InputGroup>
             <Table.Root size="lg" variant='outline' striped showColumnBorder>
@@ -109,7 +135,7 @@ function UserPopup() {
                       checked={indeterminate ? "indeterminate" : selection.length > 0}
                       onCheckedChange={(changes) => {
                         setSelection(
-                          changes.checked ? MockUsers.map((MockUsers) => MockUsers.email) : [],
+                          changes.checked ? filteredUsers.map((MockUsers) => MockUsers.email) : [],
                         )
                       }}
                     />
@@ -134,9 +160,8 @@ function UserPopup() {
                   </Table.Row>
                 </Table.Row>
               </Table.Body>
-            </Table.Root>
-
-            <PaginationRoot count={mockUsersCount} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
+            </Table.Root>                                                                
+            <PaginationRoot count={filteredUsers.length} pageSize={10} page={mockPage} onPageChange={(v) => handlePageChange(v.page)}>
               <HStack wrap="wrap">
                 <PaginationPrevTrigger />
                 <PaginationItems />
