@@ -58,6 +58,15 @@ const MockUsers = [
     createdAt: "2024-09-25",
     updatedAt: "2024-10-05",
   },
+  {
+    id: 6,
+    firstName: "Pedro",
+    lastName: "Almeida",
+    phone: "(61) 91234-5678",
+    email: "fernanda.almeida@example.com",
+    createdAt: "2024-08-15",
+    updatedAt: "2024-09-10",
+  },
 ];
 
 function Users() {
@@ -67,6 +76,10 @@ function Users() {
 
   const { getUsers } = useApi();
   const { token } = useAuth();
+
+  const [selection, setSelection] = useState<string[]>([])
+  const hasSelection = selection.length > 0
+  const indeterminate = hasSelection && selection.length < MockUsers.length
 
   const fetchUsers = async () => {
     const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
@@ -78,6 +91,34 @@ function Users() {
     fetchUsers();
   }, [page]);
 
+  const rows = MockUsers.map((MockUsers) => (
+    <Table.Row
+      key={MockUsers.id}
+      data-selected={selection.includes(MockUsers.email) ? "" : undefined}
+    >
+      <Table.Cell>
+        <Checkbox
+          top="1"
+          aria-label="Select row"
+          checked={selection.includes(MockUsers.email)}
+          onCheckedChange={(changes) => {
+            setSelection((prev) =>
+              changes.checked
+                ? [...prev, MockUsers.email]
+                : selection.filter((email) => email !== MockUsers.email),
+            )
+          }}
+        />
+      </Table.Cell>
+      <Table.Cell>{MockUsers.firstName}</Table.Cell>
+      <Table.Cell>{MockUsers.lastName}</Table.Cell>
+      <Table.Cell>{MockUsers.phone}</Table.Cell>
+      <Table.Cell>{MockUsers.email}</Table.Cell>
+      <Table.Cell>{MockUsers.createdAt}</Table.Cell>
+      <Table.Cell>{MockUsers.updatedAt}</Table.Cell>
+    </Table.Row>
+  ))
+
   return (
     <Box height='100vh'>
       <Flex height='100%'>
@@ -87,7 +128,18 @@ function Users() {
             <Table.Root size="lg" variant='outline' striped showColumnBorder>
               <Table.Header>
                 <Table.Row>
-                  <Table.ColumnHeader>Selecionar</Table.ColumnHeader>
+                  <Table.ColumnHeader>
+                    <Checkbox
+                      top="1"
+                      aria-label="Select all rows"
+                      checked={indeterminate ? "indeterminate" : selection.length > 0}
+                      onCheckedChange={(changes) => {
+                        setSelection(
+                          changes.checked ? MockUsers.map((MockUsers) => MockUsers.email) : [],
+                        )
+                      }}
+                    />
+                  </Table.ColumnHeader>
                   <Table.ColumnHeader>Nome</Table.ColumnHeader>
                   <Table.ColumnHeader>Sobrenome</Table.ColumnHeader>
                   <Table.ColumnHeader>Telefone</Table.ColumnHeader>
@@ -97,17 +149,10 @@ function Users() {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {MockUsers.map((MockUsers) => (
-                  <Table.Row key={MockUsers.id}>
-                    <Table.Cell> <Checkbox variant={'solid'} colorPalette={'white'}>Selecione</Checkbox> </Table.Cell>
-                    <Table.Cell>{MockUsers.firstName}</Table.Cell>
-                    <Table.Cell>{MockUsers.lastName}</Table.Cell>
-                    <Table.Cell>{MockUsers.phone}</Table.Cell>
-                    <Table.Cell>{MockUsers.email}</Table.Cell>
-                    <Table.Cell>{MockUsers.createdAt}</Table.Cell>
-                    <Table.Cell>{MockUsers.updatedAt}</Table.Cell>
-                  </Table.Row>
-                ))}
+                {rows}
+                <Table.Row cell-span={1}>
+                  <Table.Cell> {selection.length} selected </Table.Cell>
+                </Table.Row>
               </Table.Body>
             </Table.Root>
 
