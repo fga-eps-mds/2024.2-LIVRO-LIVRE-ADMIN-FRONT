@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Stack, Table } from '@chakra-ui/react';
+import { Box, Flex, HStack, Stack, Table, Input } from '@chakra-ui/react';
 import { Checkbox } from "../../components/ui/checkbox"
 import { SideBar } from '../../components/SideBar';
 import useApi from '../../hooks/useApi';
@@ -11,68 +11,27 @@ import {
   PaginationRoot,
 } from "../../components/ui/pagination";
 import { useAuth } from '../../hooks/useAuth';
+import { InputGroup } from '../../components/ui/input-group';
+import { IoSearchOutline } from "react-icons/io5";
 
-const MockUsers = [
-  {
-    id: 1,
-    firstName: "João",
-    lastName: "Silva",
-    phone: "(11) 98765-4321",
-    email: "joao.silva@example.com",
-    createdAt: "2025-01-01",
-    updatedAt: "2025-01-15",
-  },
-  {
-    id: 2,
-    firstName: "Maria",
-    lastName: "Santos",
-    phone: "(21) 91234-5678",
-    email: "maria.santos@example.com",
-    createdAt: "2024-12-20",
-    updatedAt: "2025-01-10",
-  },
-  {
-    id: 3,
-    firstName: "Carlos",
-    lastName: "Oliveira",
-    phone: "(31) 99876-5432",
-    email: "carlos.oliveira@example.com",
-    createdAt: "2024-11-05",
-    updatedAt: "2024-12-15",
-  },
-  {
-    id: 4,
-    firstName: "Ana",
-    lastName: "Costa",
-    phone: "(41) 92345-6789",
-    email: "ana.costa@example.com",
-    createdAt: "2024-10-30",
-    updatedAt: "2024-11-20",
-  },
-  {
-    id: 5,
-    firstName: "Pedro",
-    lastName: "Mendes",
-    phone: "(51) 98765-1234",
-    email: "pedro.mendes@example.com",
-    createdAt: "2024-09-25",
-    updatedAt: "2024-10-05",
-  },
-  {
-    id: 6,
-    firstName: "Pedro",
-    lastName: "Almeida",
-    phone: "(61) 91234-5678",
-    email: "fernanda.almeida@example.com",
-    createdAt: "2024-08-15",
-    updatedAt: "2024-09-10",
-  },
-];
+const MockUsers = Array.from({ length: 50 }, (_, i) => ({
+  id: `${i + 1}`,
+  firstName: `Nome ${i + 1}`,
+  lastName: `Sobrenome ${i + 1}`,
+  phone: `Telefone ${i + 1}`,
+  email: `email${i + 1}@email.com`,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+}));
 
 function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [usersCount, setUsersCount] = useState(0);
   const [page, setPage] = useState(1);
+
+  const [showMockUsers, setShowMockUsers] = useState<User[]>([]);
+  const [mockUsersCount, setMockUsersCount] = useState(MockUsers.length);
+  const [mockPage, setMockPage] = useState(1);
 
   const { getUsers } = useApi();
   const { token } = useAuth();
@@ -81,17 +40,28 @@ function Users() {
   const hasSelection = selection.length > 0
   const indeterminate = hasSelection && selection.length < MockUsers.length
 
-  const fetchUsers = async () => {
-    const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
-    setUsers(data.items);
-    setUsersCount(data.total);
-  }
+  // const fetchUsers = async () => {
+  //   const { data } = await getUsers({ perPage: 10, page: page - 1 }, token);
+  //   setUsers(data.items);
+  //   setUsersCount(data.total);
+  // }
+
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, [page]);
+
+  const MockfetchUsers = () => {
+    const startIndex = (mockPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    const paginatedUsers = MockUsers.slice(startIndex, endIndex);
+    setShowMockUsers(paginatedUsers);
+  };
 
   useEffect(() => {
-    fetchUsers();
-  }, [page]);
+    MockfetchUsers();
+  }, [mockPage]);
 
-  const rows = MockUsers.map((MockUsers) => (
+  const rows = showMockUsers.map((MockUsers) => (
     <Table.Row
       key={MockUsers.id}
       data-selected={selection.includes(MockUsers.email) ? "" : undefined}
@@ -125,6 +95,12 @@ function Users() {
         <SideBar />
         <Box padding='40px'>
           <Stack>
+            <InputGroup flex="0.85" startElement={<IoSearchOutline />}>
+              <Input
+                type="text"
+                placeholder="Digite o nome do usuário."
+              />
+            </InputGroup>
             <Table.Root size="lg" variant='outline' striped showColumnBorder>
               <Table.Header>
                 <Table.Row>
@@ -151,12 +127,18 @@ function Users() {
               <Table.Body>
                 {rows}
                 <Table.Row cell-span={1}>
-                  <Table.Cell> {selection.length} selected </Table.Cell>
+                  <Table.Row>
+                    <Table.Cell>
+                      {selection.length > 1
+                        ? `${selection.length} Selecionados`
+                        : `${selection.length} Selecionado`}
+                    </Table.Cell>
+                  </Table.Row>
                 </Table.Row>
               </Table.Body>
             </Table.Root>
 
-            <PaginationRoot count={usersCount} pageSize={10} page={page} onPageChange={(v) => setPage(v.page)}>
+            <PaginationRoot count={mockUsersCount} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
               <HStack wrap="wrap">
                 <PaginationPrevTrigger />
                 <PaginationItems />
