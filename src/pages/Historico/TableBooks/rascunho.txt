@@ -1,0 +1,94 @@
+import { Flex, HStack, Heading, Input, Stack, Table, Image } from "@chakra-ui/react";
+import {
+  PaginationItems,
+  PaginationNextTrigger,
+  PaginationPrevTrigger,
+  PaginationRoot,
+} from "../../../components/ui/pagination";
+import { useState } from "react";
+
+interface Book {
+    id: string;
+    titulo: string;
+    autor: string;
+    tema: string;
+    rating: number;
+    imageUrl: string;
+}
+
+const mockBooks = Array.from({ length: 5}, (_, i) => ({
+    id: `${i + 1}`,
+    titulo: `Título do Livro ${i + 1}`,
+    autor: `Autor ${i + 1}`,
+    tema: `Tema ${i + 1}`,
+    rating: Math.random() * 5,
+    imageUrl: 'https://plus.unsplash.com/premium_photo-1682125773446-259ce64f9dd7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+}));
+
+function TableBooks() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [timePeriod, setTimePeriod] = useState("");
+  const [loanDuration, setLoanDuration] = useState("");
+
+  const filteredBooks = mockBooks.filter((book) =>
+    book.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <Stack width="full" gap="5">
+      <Heading size="md" mb={2}>Filtros</Heading>
+      <HStack mb={4}>
+        <Input
+          placeholder="Buscar por título do livro"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Input
+          placeholder="Período de tempo"
+          value={timePeriod}
+          onChange={(e) => setTimePeriod(e.target.value)}
+        />
+        <Input
+          placeholder="Duração do empréstimo"
+          value={loanDuration}
+          onChange={(e) => setLoanDuration(e.target.value)}
+        />
+      </HStack>
+
+      <Table.Root size="sm" variant="line" striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Capa do livro</Table.ColumnHeader>
+            <Table.ColumnHeader>Titulo do livro </Table.ColumnHeader>
+            <Table.ColumnHeader>Data de empréstimo </Table.ColumnHeader>
+            <Table.ColumnHeader>Data de devolução </Table.ColumnHeader>
+            <Table.ColumnHeader>Duração do empréstimo </Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {filteredBooks.map((book) => (
+            <Table.Row key={book.id}>
+              <Table.Cell>
+                <Flex justify="center" align="center" height="100%">
+                    <Image
+                        src={book.imageUrl}
+                        alt={`Capa do livro ${book.titulo}`}
+                        boxSize="50px"
+                        objectFit="cover"
+                        borderRadius="md"
+                    />
+                </Flex>
+              </Table.Cell>
+              <Table.Cell>{book.titulo}</Table.Cell>
+              <Table.Cell>{book.autor}</Table.Cell>
+              <Table.Cell>{book.tema}</Table.Cell>
+              <Table.Cell>{book.rating}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Stack>
+  );
+}
+
+export default TableBooks;
