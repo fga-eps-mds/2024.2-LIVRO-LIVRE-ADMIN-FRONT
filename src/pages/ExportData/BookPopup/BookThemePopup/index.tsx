@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Stack, Table, Input, Image } from '@chakra-ui/react';
+import { Box, Flex, HStack, Stack, Table, Input } from '@chakra-ui/react';
 import { Checkbox } from "../../../../components/ui/checkbox"
 import { useEffect, useState } from 'react';
 import {
@@ -10,37 +10,31 @@ import {
 import { InputGroup } from '../../../../components/ui/input-group';
 import { IoSearchOutline } from "react-icons/io5";
 
-interface Book {
-    id: string;
-    titulo: string;
-    autor: string;
-    tema: string;
-    rating: number;
-    imageUrl: string;
-}
-
-const mockBooks = Array.from({ length: 32 }, (_, i) => ({
+const mockBooks = Array.from({ length: 30 }, (_, i) => ({
     id: `${i + 1}`,
-    titulo: `Título do Livro ${i + 1}`,
-    autor: `Autor ${i + 1}`,
-    tema: `Tema ${i + 1}`,
+    titulo: `Título ${Math.floor(i / 2) + 1}`,
+    autor: `Autor ${i%28 + 1}`,
+    tema: `Tema ${i%28 + 1}`,
     rating: Math.random() * 5,
     imageUrl: 'https://plus.unsplash.com/premium_photo-1682125773446-259ce64f9dd7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 }));
 
-function BookTitlePopup() {
-    const [showMockBooks, setShowMockBooks] = useState<Book[]>([]);
-    const [mockBooksCount] = useState(mockBooks.length);
+function BookThemePopup() {
+    const [showMockBooks, setShowMockBooks] = useState<string[]>([]); 
     const [mockPage, setMockPage] = useState(1);
 
-    const [selection, setSelection] = useState<string[]>([])
-    const hasSelection = selection.length > 0
-    const indeterminate = hasSelection && selection.length < mockBooks.length
+    const [selection, setSelection] = useState<string[]>([]);
+    const hasSelection = selection.length > 0;
+    const indeterminate = hasSelection && selection.length < showMockBooks.length;
+
+    const filteredMockBooks = mockBooks
+        .map((book) => book.tema)
+        .filter((value, index, self) => self.indexOf(value) === index);
 
     const MockfetchBooks = () => {
-        const startIndex = (mockPage - 1) * 5;
-        const endIndex = startIndex + 5;
-        const paginatedBooks = mockBooks.slice(startIndex, endIndex);
+        const startIndex = (mockPage - 1) * 10;
+        const endIndex = startIndex + 10;
+        const paginatedBooks = filteredMockBooks.slice(startIndex, endIndex);
         setShowMockBooks(paginatedBooks);
     };
 
@@ -48,42 +42,25 @@ function BookTitlePopup() {
         MockfetchBooks();
     }, [mockPage]);
 
-    const rows = showMockBooks.map((mockBooks) => (
-        <Table.Row
-            key={mockBooks.id}
-            data-selected={selection.includes(mockBooks.id) ? "" : undefined}
-        >
+    const rows = showMockBooks.map((tema) => (
+        <Table.Row key={tema}>
             <Table.Cell>
                 <Checkbox
                     top="1"
-                    aria-label="Select row"
-                    checked={selection.includes(mockBooks.id)}
+                    aria-label="Select theme"
+                    checked={selection.includes(tema)}
                     onCheckedChange={(changes) => {
                         setSelection((prev) =>
                             changes.checked
-                                ? [...prev, mockBooks.id]
-                                : selection.filter((id) => id !== mockBooks.id),
-                        )
+                                ? [...prev, tema]
+                                : selection.filter((a) => a !== tema),
+                        );
                     }}
                 />
             </Table.Cell>
-            <Table.Cell>{mockBooks.titulo}</Table.Cell>
-            <Table.Cell>{mockBooks.autor}</Table.Cell>
-            <Table.Cell>{mockBooks.tema}</Table.Cell>
-            <Table.Cell>{mockBooks.rating.toFixed(2)}</Table.Cell>
-            <Table.Cell>
-                <Flex justify="center" align="center" height="100%">
-                    <Image
-                        src={mockBooks.imageUrl}
-                        alt={`Capa do livro ${mockBooks.titulo}`}
-                        boxSize="50px"
-                        objectFit="cover"
-                        borderRadius="md"
-                    />
-                </Flex>
-            </Table.Cell>
+            <Table.Cell>{tema}</Table.Cell>
         </Table.Row>
-    ))
+    ));
 
     return (
         <Box height='100vh'>
@@ -93,7 +70,7 @@ function BookTitlePopup() {
                         <InputGroup flex="0.85" startElement={<IoSearchOutline />}>
                             <Input
                                 type="text"
-                                placeholder="Digite o título do livro."
+                                placeholder="Digite o gênero do livro."
                             />
                         </InputGroup>
                         <Table.Root size="lg" variant='outline' striped showColumnBorder>
@@ -106,22 +83,18 @@ function BookTitlePopup() {
                                             checked={indeterminate ? "indeterminate" : selection.length > 0}
                                             onCheckedChange={(changes) => {
                                                 setSelection(
-                                                    changes.checked ? mockBooks.map((mockBooks) => mockBooks.id) : [],
-                                                )
+                                                    changes.checked ? filteredMockBooks : [],
+                                                );
                                             }}
                                         />
                                     </Table.ColumnHeader>
-                                    <Table.ColumnHeader>Título</Table.ColumnHeader>
-                                    <Table.ColumnHeader>Autor</Table.ColumnHeader>
-                                    <Table.ColumnHeader>Tema</Table.ColumnHeader>
-                                    <Table.ColumnHeader>Avaliação</Table.ColumnHeader>
-                                    <Table.ColumnHeader>Capa do Livro</Table.ColumnHeader>
+                                    <Table.ColumnHeader>Gênero</Table.ColumnHeader>
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
                                 {rows}
                                 <Table.Row>
-                                    <Table.Cell colSpan={7}>
+                                    <Table.Cell colSpan={2}>
                                         {selection.length > 1
                                             ? `${selection.length} Selecionados`
                                             : `${selection.length} Selecionado`}
@@ -130,7 +103,7 @@ function BookTitlePopup() {
                             </Table.Body>
                         </Table.Root>
 
-                        <PaginationRoot count={mockBooksCount} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
+                        <PaginationRoot count={filteredMockBooks.length} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
                             <HStack wrap="wrap">
                                 <PaginationPrevTrigger />
                                 <PaginationItems />
@@ -144,4 +117,4 @@ function BookTitlePopup() {
     );
 }
 
-export default BookTitlePopup
+export default BookThemePopup;

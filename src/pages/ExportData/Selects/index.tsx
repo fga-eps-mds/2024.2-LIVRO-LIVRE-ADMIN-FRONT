@@ -21,6 +21,7 @@ import UserPopup from "../UserPopup";
 import { useState } from "react";
 import BookTitlePopup from "../BookPopup/BookTitlePopup";
 import BookAuthorPopup from "../BookPopup/BookAuthorPopup";
+import BookThemePopup from "../BookPopup/BookThemePopup";
 
 function SelectFilters() {
     const [popoverOpenUsers, setPopoverOpenUsers] = useState(false);
@@ -116,6 +117,23 @@ function SelectFilters() {
                                         </DialogHeader>
                                         <DialogBody>
                                             <BookAuthorPopup />
+                                        </DialogBody>
+                                    </DialogContent>
+                                </DialogRoot>
+
+                                <DialogRoot size="cover" placement="center" motionPreset="slide-in-bottom">
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" size="xs" onClick={closePopover}>
+                                            Escolher Temas
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Selecione os Temas desejados</DialogTitle>
+                                            <DialogCloseTrigger />
+                                        </DialogHeader>
+                                        <DialogBody>
+                                            <BookThemePopup />
                                         </DialogBody>
                                     </DialogContent>
                                 </DialogRoot>

@@ -13,7 +13,8 @@ import { IoSearchOutline } from "react-icons/io5";
 const mockBooks = Array.from({ length: 30 }, (_, i) => ({
     id: `${i + 1}`,
     titulo: `Título ${Math.floor(i / 2) + 1}`,
-    autor: `Autor ${i+1}`,
+    autor: `Autor ${i%28 +1}`,
+    tema: `Tema ${i+1}`,
     rating: Math.random() * 5,
     imageUrl: 'https://plus.unsplash.com/premium_photo-1682125773446-259ce64f9dd7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 }));
@@ -26,12 +27,10 @@ function BookAuthorPopup() {
     const hasSelection = selection.length > 0;
     const indeterminate = hasSelection && selection.length < showMockBooks.length;
 
-    // Filtrando os autores únicos
     const filteredMockBooks = mockBooks
         .map((book) => book.autor)
         .filter((value, index, self) => self.indexOf(value) === index);
 
-    // Função para obter livros filtrados por página
     const MockfetchBooks = () => {
         const startIndex = (mockPage - 1) * 10;
         const endIndex = startIndex + 10;
