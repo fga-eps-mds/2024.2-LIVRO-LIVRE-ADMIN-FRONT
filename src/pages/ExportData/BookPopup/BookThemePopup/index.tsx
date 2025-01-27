@@ -32,8 +32,8 @@ function BookThemePopup() {
         .filter((value, index, self) => self.indexOf(value) === index);
 
     const MockfetchBooks = () => {
-        const startIndex = (mockPage - 1) * 10;
-        const endIndex = startIndex + 10;
+        const startIndex = (mockPage - 1) * 5;
+        const endIndex = startIndex + 5;
         const paginatedBooks = filteredMockBooks.slice(startIndex, endIndex);
         setShowMockBooks(paginatedBooks);
     };

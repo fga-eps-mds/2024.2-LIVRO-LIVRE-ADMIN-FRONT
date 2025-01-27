@@ -1,13 +1,12 @@
-import { Button, Text, Stack, HStack } from "@chakra-ui/react"
+import { Button, Text, Stack, HStack } from "@chakra-ui/react";
 import {
     PopoverArrow,
     PopoverBody,
     PopoverContent,
     PopoverRoot,
     PopoverTrigger,
-} from "../../../components/ui/popover"
-import { BsPerson } from 'react-icons/bs';
-import { GoBook } from "react-icons/go";
+} from "../../../components/ui/popover";
+import { BsPerson } from "react-icons/bs";
 import {
     DialogBody,
     DialogCloseTrigger,
@@ -19,22 +18,17 @@ import {
 } from "../../../components/ui/dialog";
 import UserPopup from "../UserPopup";
 import { useState } from "react";
-import BookTitlePopup from "../BookPopup/BookTitlePopup";
-import BookAuthorPopup from "../BookPopup/BookAuthorPopup";
-import BookThemePopup from "../BookPopup/BookThemePopup";
+import { FaFileExport } from "react-icons/fa";
+import useApi from "../../../hooks/useApi";
 
 function SelectFilters() {
     const [popoverOpenUsers, setPopoverOpenUsers] = useState(false);
-    const [popoverOpenBooks, setPopoverOpenBooks] = useState(false);
+    const [, setPopoverOpenBooks] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]); // Estado para armazenar os usuários selecionados
 
     const handlePopoverUsersToggle = () => {
         setPopoverOpenUsers((prev) => !prev);
         if (!popoverOpenUsers) setPopoverOpenBooks(false);
-    };
-
-    const handlePopoverBooksToggle = () => {
-        setPopoverOpenBooks((prev) => !prev);
-        if (!popoverOpenBooks) setPopoverOpenUsers(false);
     };
 
     const closePopover = () => {
@@ -42,8 +36,21 @@ function SelectFilters() {
         setPopoverOpenBooks(false);
     };
 
+    const api = useApi();
+    const userIds = selectedUsers;
+
+    const handleExportCsv = async () => {
+        try {
+            await api.exportToCsv(userIds);
+            alert("Arquivo CSV baixado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao exportar CSV:", error);
+            alert("Não foi possível baixar o arquivo.");
+        }
+    };
+
     return (
-        <Stack gap={'30px'}>
+        <Stack gap={"30px"}>
             <Text>Selecione os Filtros desejados:</Text>
             <HStack>
                 <PopoverRoot positioning={{ sameWidth: true }} open={popoverOpenUsers}>
@@ -56,84 +63,34 @@ function SelectFilters() {
                         <PopoverArrow />
                         <PopoverBody>
                             <Stack>
-                                <DialogRoot size="cover" placement="center" motionPreset="slide-in-bottom">
+                                <DialogRoot
+                                    size="full"
+                                    placement="center"
+                                    motionPreset="slide-in-bottom"
+                                    scrollBehavior="inside"
+                                >
                                     <DialogTrigger asChild>
                                         <Button variant="outline" size="xs" onClick={closePopover}>
                                             Escolher Usuários
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent>
+                                    <DialogContent
+                                        maxW="90vw" 
+                                        maxH="90vh"
+                                        overflow="hidden" 
+                                        p="4"
+                                    >
                                         <DialogHeader>
                                             <DialogTitle>Escolha os usuários desejados</DialogTitle>
                                             <DialogCloseTrigger />
                                         </DialogHeader>
                                         <DialogBody>
-                                            <UserPopup />
-                                        </DialogBody>
-                                    </DialogContent>
-                                </DialogRoot>
-                            </Stack>
-                        </PopoverBody>
-                    </PopoverContent>
-                </PopoverRoot>
-
-                <PopoverRoot positioning={{ sameWidth: true }} open={popoverOpenBooks}>
-                    <PopoverTrigger asChild>
-                        <Button size="sm" variant="outline" minW="xs" onClick={handlePopoverBooksToggle}>
-                            <GoBook /> Livros
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent width="auto">
-                        <PopoverArrow />
-                        <PopoverBody>
-                            <Stack>
-                                <DialogRoot size="cover" placement="center" motionPreset="slide-in-bottom">
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" size="xs" onClick={closePopover}>
-                                            Escolher por Título
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Escolha os Livros desejados</DialogTitle>
-                                            <DialogCloseTrigger />
-                                        </DialogHeader>
-                                        <DialogBody>
-                                            <BookTitlePopup />
-                                        </DialogBody>
-                                    </DialogContent>
-                                </DialogRoot>
-
-                                <DialogRoot size="cover" placement="center" motionPreset="slide-in-bottom">
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" size="xs" onClick={closePopover}>
-                                            Escolher Autores
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Selecione os Autores desejados</DialogTitle>
-                                            <DialogCloseTrigger />
-                                        </DialogHeader>
-                                        <DialogBody>
-                                            <BookAuthorPopup />
-                                        </DialogBody>
-                                    </DialogContent>
-                                </DialogRoot>
-
-                                <DialogRoot size="cover" placement="center" motionPreset="slide-in-bottom">
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" size="xs" onClick={closePopover}>
-                                            Escolher Temas
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Selecione os Temas desejados</DialogTitle>
-                                            <DialogCloseTrigger />
-                                        </DialogHeader>
-                                        <DialogBody>
-                                            <BookThemePopup />
+                                            <Stack gap="4">
+                                                <UserPopup
+                                                    onSelectionChange={setSelectedUsers}
+                                                    selectedUsers={selectedUsers}
+                                                />
+                                            </Stack>
                                         </DialogBody>
                                     </DialogContent>
                                 </DialogRoot>
@@ -142,8 +99,11 @@ function SelectFilters() {
                     </PopoverContent>
                 </PopoverRoot>
             </HStack>
-        </Stack >
-    )
+            <Button mt={"250px"} backgroundColor={"green.100"} disabled={selectedUsers.length === 0} onClick={handleExportCsv} w={"320px"}>
+                <FaFileExport /> Exportar Dados CSV
+            </Button>
+        </Stack>
+    );
 }
 
-export default SelectFilters
+export default SelectFilters;
