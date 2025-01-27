@@ -18,11 +18,10 @@ function App() {
           <Routes>
             <Route path="*" element={<NotFound />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-            <Route path="/login" element={<SignIn />} />
-            <Route path="/inicio" element={<Home />} />
-            {/* <PrivateRoute><Home /></PrivateRoute> <PrivateRoute><Users /></PrivateRoute>*/}
-            <Route path="/usuarios" element={<Users />} /> 
-            <Route path="/exportar-dados" element={<ExportarDados />} />
+            <Route path="/login" element={<PrivateRoute><SignIn /></PrivateRoute>} />
+            <Route path="/inicio" element={<PrivateRoute><Home /></PrivateRoute>} />
+            <Route path="/usuarios" element={<PrivateRoute><Users /></PrivateRoute>} />
+            <Route path="/exportar-dados" element={<PrivateRoute><ExportarDados /></PrivateRoute>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

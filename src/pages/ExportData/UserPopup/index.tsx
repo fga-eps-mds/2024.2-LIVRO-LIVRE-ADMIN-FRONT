@@ -14,7 +14,13 @@ import { useAuth } from '../../../hooks/useAuth';
 import { InputGroup } from '../../../components/ui/input-group';
 import { IoSearchOutline } from "react-icons/io5";
 
-function UserPopup({ onSelectionChange, selectedUsers }: { onSelectionChange: (selectedUsers: string[]) => void, selectedUsers: string[] }) {
+interface UserPopupProps {
+    onSelectionChange: (selectedUsers: string[]) => void;
+    selectedUsers: string[];
+}
+
+function UserPopup(props: Readonly<UserPopupProps>) {
+    const { onSelectionChange, selectedUsers } = props;
     const [inputValue, setInputValue] = useState(''); //~ variavel que guard o valor do input
 
     const [users, setUsers] = useState<User[]>([]);
@@ -41,7 +47,7 @@ function UserPopup({ onSelectionChange, selectedUsers }: { onSelectionChange: (s
     const indeterminate = hasSelection && selection.length < usersCount
 
     const handleSaveSelection = () => {
-        setSelection(selection);
+        setSelection((prevSelection) => [...prevSelection]);
         onSelectionChange(selection);
         toaster.create({
             description: "Arquivo salvo com sucesso.",
