@@ -19,6 +19,7 @@ import {
 import UserPopup from "../UserPopup";
 import { useState } from "react";
 import { FaFileExport } from "react-icons/fa";
+import { IoMdBook } from "react-icons/io";
 import useApi from "../../../hooks/useApi";
 import BookTitlePopup from "../BookPopup/BookTitlePopup";
 import BookAuthorPopup from "../BookPopup/BookAuthorPopup";
@@ -76,7 +77,7 @@ function SelectFilters() {
     return (
         <Stack gap={"30px"}>
             <Text>Selecione os Filtros desejados:</Text>
-            <HStack>
+            <Stack>
                 <PopoverRoot positioning={{ sameWidth: true }} open={popoverOpenUsers}>
                     <PopoverTrigger asChild>
                         <Button size="sm" variant="outline" minW="xs" onClick={handlePopoverUsersToggle}>
@@ -126,7 +127,7 @@ function SelectFilters() {
                 <PopoverRoot positioning={{ sameWidth: true }} open={popoverOpenBooks}>
                     <PopoverTrigger asChild>
                         <Button size="sm" variant="outline" minW="xs" onClick={handlePopoverBooksToggle}>
-                            <BsPerson /> Livros
+                            <IoMdBook /> Livros
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent width="auto">
@@ -234,8 +235,8 @@ function SelectFilters() {
                     </PopoverContent>
                 </PopoverRoot>
 
-            </HStack>
-            <Button mt={"250px"} backgroundColor={"green.100"} disabled={booksIds.length === 0 && userIds.length === 0} onClick={handleExportCsv} w={"320px"}>
+            </Stack>
+            <Button mt={"200px"} backgroundColor={"green.100"} disabled={booksIds.length === 0 && userIds.length === 0} onClick={handleExportCsv} w={"320px"}>
                 <FaFileExport /> Exportar Dados CSV
             </Button>
         </Stack>
