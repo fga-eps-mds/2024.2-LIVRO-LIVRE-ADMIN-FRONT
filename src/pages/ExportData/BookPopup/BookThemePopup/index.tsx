@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Stack, Table, Input } from '@chakra-ui/react';
+import { Box, Flex, HStack, Stack, Table, Input, Button } from '@chakra-ui/react';
 import { Checkbox } from "../../../../components/ui/checkbox"
 import { useEffect, useState } from 'react';
 import {
@@ -9,56 +9,78 @@ import {
 } from "../../../../components/ui/pagination";
 import { InputGroup } from '../../../../components/ui/input-group';
 import { IoSearchOutline } from "react-icons/io5";
+import { toaster } from '../../../../components/ui/toaster';
+import { Book } from '../../../../interfaces/user';
+import { mockBooks } from "../BookTitlePopup";
 
-const mockBooks = Array.from({ length: 30 }, (_, i) => ({
-    id: `${i + 1}`,
-    titulo: `Título ${Math.floor(i / 2) + 1}`,
-    autor: `Autor ${i%28 + 1}`,
-    tema: `Tema ${i%28 + 1}`,
-    rating: Math.random() * 5,
-    imageUrl: 'https://plus.unsplash.com/premium_photo-1682125773446-259ce64f9dd7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-}));
+interface BooksPopupProps {
+    onSelectionChange: (selectedBooks: string[]) => void;
+    selectedBooks: string[];
+}
 
-function BookThemePopup() {
-    const [showMockBooks, setShowMockBooks] = useState<string[]>([]); 
+function BookThemePopup(props: Readonly<BooksPopupProps>) {
+    const { onSelectionChange, selectedBooks } = props;
+    const [inputValue, setInputValue] = useState('');
+    const [filteredAuthors, setFilteredAuthors] = useState(mockBooks);
+
+    const [showMockBooks, setShowMockBooks] = useState<Book[]>([]);
     const [mockPage, setMockPage] = useState(1);
 
-    const [selection, setSelection] = useState<string[]>([]);
+    const [selection, setSelection] = useState<string[]>(selectedBooks);
     const hasSelection = selection.length > 0;
     const indeterminate = hasSelection && selection.length < showMockBooks.length;
 
-    const filteredMockBooks = mockBooks
-        .map((book) => book.tema)
-        .filter((value, index, self) => self.indexOf(value) === index);
-
-    const MockfetchBooks = () => {
+    useEffect(() => {
         const startIndex = (mockPage - 1) * 5;
         const endIndex = startIndex + 5;
-        const paginatedBooks = filteredMockBooks.slice(startIndex, endIndex);
+        const paginatedBooks = filteredAuthors.slice(startIndex, endIndex);
         setShowMockBooks(paginatedBooks);
+    }, [filteredAuthors, mockPage]);
+
+    const handlePageChange = (mockPage: number) => {
+        setMockPage(mockPage);
+    };
+
+    const handleSaveSelection = () => {
+        setSelection((prevSelection) => [...prevSelection]);
+        onSelectionChange(selection);
+        toaster.create({
+            description: "Arquivo salvo com sucesso.",
+            type: "success",
+        })
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value);
     };
 
     useEffect(() => {
-        MockfetchBooks();
-    }, [mockPage]);
+        const lowerCaseInput = inputValue.toLowerCase();
+        const filtered = mockBooks.filter(
+            mockBooks =>
+                mockBooks.titulo.toLowerCase().includes(lowerCaseInput)
+        );
+        setFilteredAuthors(filtered);
+        setMockPage(1);
+    }, [inputValue]);
 
-    const rows = showMockBooks.map((tema) => (
-        <Table.Row key={tema}>
+    const rows = showMockBooks.map((mockBooks) => (
+        <Table.Row key={mockBooks.tema}>
             <Table.Cell>
                 <Checkbox
                     top="1"
                     aria-label="Select theme"
-                    checked={selection.includes(tema)}
+                    checked={selection.includes(mockBooks.tema)}
                     onCheckedChange={(changes) => {
                         setSelection((prev) =>
                             changes.checked
-                                ? [...prev, tema]
-                                : selection.filter((a) => a !== tema),
+                                ? [...prev, mockBooks.tema]
+                                : selection.filter((a) => a !== mockBooks.tema),
                         );
                     }}
                 />
             </Table.Cell>
-            <Table.Cell>{tema}</Table.Cell>
+            <Table.Cell>{mockBooks.tema}</Table.Cell>
         </Table.Row>
     ));
 
@@ -71,6 +93,8 @@ function BookThemePopup() {
                             <Input
                                 type="text"
                                 placeholder="Digite o gênero do livro."
+                                value={inputValue}
+                                onChange={handleInputChange}
                             />
                         </InputGroup>
                         <Table.Root size="lg" variant='outline' striped showColumnBorder>
@@ -83,7 +107,7 @@ function BookThemePopup() {
                                             checked={indeterminate ? "indeterminate" : selection.length > 0}
                                             onCheckedChange={(changes) => {
                                                 setSelection(
-                                                    changes.checked ? filteredMockBooks : [],
+                                                    changes.checked ? filteredAuthors.map((mockBooks) => mockBooks.tema) : [],
                                                 );
                                             }}
                                         />
@@ -103,13 +127,18 @@ function BookThemePopup() {
                             </Table.Body>
                         </Table.Root>
 
-                        <PaginationRoot count={filteredMockBooks.length} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
+                        <PaginationRoot count={filteredAuthors.length} pageSize={10} page={mockPage} onPageChange={(v) => handlePageChange(v.page)}>
                             <HStack wrap="wrap">
                                 <PaginationPrevTrigger />
                                 <PaginationItems />
                                 <PaginationNextTrigger />
                             </HStack>
                         </PaginationRoot>
+                        <HStack justify="flex-end" mt={4}>
+                            <Button colorScheme="blue" onClick={handleSaveSelection}>
+                                Salvar
+                            </Button>
+                        </HStack>
                     </Stack>
                 </Box>
             </Flex>

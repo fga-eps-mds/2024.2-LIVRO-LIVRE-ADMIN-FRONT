@@ -67,18 +67,18 @@ const useApi = () => {
           .catch((err) => resolve(getDefaultErrorUseAPIMessage(err)));
       });
     },
-    exportToCsv: (userIds: string[]): Promise<void> => {
+    exportToCsv: (userIds: string[], bookIds: string[]): Promise<void> => {
       return new Promise((resolve, reject) => {
         api
           .get('/export', {
-            params: { userIds: userIds.join(',') },
+            params: { userIds: userIds.join(','), bookIds: bookIds.join(',') },
             responseType: 'blob',
           })
           .then((response) => {
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'export.csv');
+            link.setAttribute('download', 'Dados_Livro_Livre.csv');
             document.body.appendChild(link);
             link.click();
             link.parentNode?.removeChild(link);

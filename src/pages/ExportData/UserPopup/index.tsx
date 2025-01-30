@@ -21,7 +21,7 @@ interface UserPopupProps {
 
 function UserPopup(props: Readonly<UserPopupProps>) {
     const { onSelectionChange, selectedUsers } = props;
-    const [inputValue, setInputValue] = useState(''); //~ variavel que guard o valor do input
+    const [inputValue, setInputValue] = useState('');
 
     const [users, setUsers] = useState<User[]>([]);
     const [usersCount, setUsersCount] = useState(0);
@@ -161,7 +161,7 @@ function UserPopup(props: Readonly<UserPopupProps>) {
                         </HStack>
                     </PaginationRoot>
                     <HStack justify="flex-end" mt={4}>
-                        <Button colorScheme="blue" disabled={!hasSelection} onClick={handleSaveSelection}>
+                        <Button colorScheme="blue" onClick={handleSaveSelection}>
                             Salvar
                         </Button>
                     </HStack>

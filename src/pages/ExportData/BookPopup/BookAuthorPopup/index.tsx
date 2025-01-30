@@ -1,4 +1,4 @@
-import { Box, Flex, HStack, Stack, Table, Input } from '@chakra-ui/react';
+import { Box, Flex, HStack, Stack, Table, Input, Button } from '@chakra-ui/react';
 import { Checkbox } from "../../../../components/ui/checkbox"
 import { useEffect, useState } from 'react';
 import {
@@ -9,56 +9,79 @@ import {
 } from "../../../../components/ui/pagination";
 import { InputGroup } from '../../../../components/ui/input-group';
 import { IoSearchOutline } from "react-icons/io5";
+import { toaster } from '../../../../components/ui/toaster';
+import { Book } from '../../../../interfaces/user';
+import { mockBooks } from "../BookTitlePopup";
 
-const mockBooks = Array.from({ length: 30 }, (_, i) => ({
-    id: `${i + 1}`,
-    titulo: `Título ${Math.floor(i / 2) + 1}`,
-    autor: `Autor ${i%28 +1}`,
-    tema: `Tema ${i+1}`,
-    rating: Math.random() * 5,
-    imageUrl: 'https://plus.unsplash.com/premium_photo-1682125773446-259ce64f9dd7?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-}));
+interface BooksPopupProps {
+    onSelectionChange: (selectedBooks: string[]) => void;
+    selectedBooks: string[];
+}
 
-function BookAuthorPopup() {
-    const [showMockBooks, setShowMockBooks] = useState<string[]>([]); // Agora é uma lista de autores (strings)
-    const [mockPage, setMockPage] = useState(1);
+function BookAuthorPopup(props: Readonly<BooksPopupProps>) {
+    const { onSelectionChange, selectedBooks } = props;
+        const [inputValue, setInputValue] = useState('');
+        const [filteredThemes, setFilteredThemes] = useState(mockBooks);
+    
+        const [showMockBooks, setShowMockBooks] = useState<Book[]>([]);
+        const [mockPage, setMockPage] = useState(1);
+    
+        const [selection, setSelection] = useState<string[]>(selectedBooks);
+        const hasSelection = selection.length > 0;
+        const indeterminate = hasSelection && selection.length < showMockBooks.length;
+    
+        useEffect(() => {
+            const startIndex = (mockPage - 1) * 5;
+            const endIndex = startIndex + 5;
+            const paginatedBooks = filteredThemes.slice(startIndex, endIndex);
+            setShowMockBooks(paginatedBooks);
+        }, [filteredThemes, mockPage]);
+    
+        const handlePageChange = (mockPage: number) => {
+            setMockPage(mockPage);
+        };
+    
+        const handleSaveSelection = () => {
+            setSelection((prevSelection) => [...prevSelection]);
+            onSelectionChange(selection);
+            toaster.create({
+                description: "Arquivo salvo com sucesso.",
+                type: "success",
+            })
+        };
+    
+        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setInputValue(e.target.value);
+        };
+    
+        useEffect(() => {
+            const lowerCaseInput = inputValue.toLowerCase();
+            const filtered = mockBooks.filter(
+                mockBooks =>
+                    mockBooks.titulo.toLowerCase().includes(lowerCaseInput)
+            );
+            setFilteredThemes(filtered);
+            setMockPage(1);
+        }, [inputValue]);
+    
 
-    const [selection, setSelection] = useState<string[]>([]);
-    const hasSelection = selection.length > 0;
-    const indeterminate = hasSelection && selection.length < showMockBooks.length;
-
-    const filteredMockBooks = mockBooks
-        .map((book) => book.autor)
-        .filter((value, index, self) => self.indexOf(value) === index);
-
-    const MockfetchBooks = () => {
-        const startIndex = (mockPage - 1) * 5;
-        const endIndex = startIndex + 5;
-        const paginatedBooks = filteredMockBooks.slice(startIndex, endIndex);
-        setShowMockBooks(paginatedBooks);
-    };
-
-    useEffect(() => {
-        MockfetchBooks();
-    }, [mockPage]);
-
-    const rows = showMockBooks.map((author) => (
-        <Table.Row key={author}>
+    const rows = showMockBooks.map((mockBooks) => (
+        <Table.Row key={mockBooks.autor}>
             <Table.Cell>
                 <Checkbox
                     top="1"
                     aria-label="Select author"
-                    checked={selection.includes(author)}
+                    checked={selection.includes(mockBooks.autor)}
                     onCheckedChange={(changes) => {
                         setSelection((prev) =>
                             changes.checked
-                                ? [...prev, author]
-                                : selection.filter((a) => a !== author),
+                                ? [...prev, mockBooks.autor]
+                                : selection.filter((a) => a !== mockBooks.autor),
                         );
                     }}
                 />
             </Table.Cell>
-            <Table.Cell>{author}</Table.Cell>
+            <Table.Cell>{mockBooks.autor}</Table.Cell>
         </Table.Row>
     ));
 
@@ -71,6 +94,8 @@ function BookAuthorPopup() {
                             <Input
                                 type="text"
                                 placeholder="Digite o nome do Autor."
+                                value={inputValue}
+                                onChange={handleInputChange}
                             />
                         </InputGroup>
                         <Table.Root size="lg" variant='outline' striped showColumnBorder>
@@ -83,7 +108,7 @@ function BookAuthorPopup() {
                                             checked={indeterminate ? "indeterminate" : selection.length > 0}
                                             onCheckedChange={(changes) => {
                                                 setSelection(
-                                                    changes.checked ? filteredMockBooks : [],
+                                                    changes.checked ? filteredThemes.map((mockBooks) => mockBooks.autor) : [],
                                                 );
                                             }}
                                         />
@@ -103,13 +128,18 @@ function BookAuthorPopup() {
                             </Table.Body>
                         </Table.Root>
 
-                        <PaginationRoot count={filteredMockBooks.length} pageSize={10} page={mockPage} onPageChange={(v) => setMockPage(v.page)}>
+                        <PaginationRoot count={filteredThemes.length} pageSize={10} page={mockPage} onPageChange={(v) => handlePageChange(v.page)}>
                             <HStack wrap="wrap">
                                 <PaginationPrevTrigger />
                                 <PaginationItems />
                                 <PaginationNextTrigger />
                             </HStack>
                         </PaginationRoot>
+                        <HStack justify="flex-end" mt={4}>
+                            <Button colorScheme="blue" onClick={handleSaveSelection}>
+                                Salvar
+                            </Button>
+                        </HStack>
                     </Stack>
                 </Box>
             </Flex>
