@@ -61,13 +61,6 @@ function SelectFilters() {
             .map(book => book.id);
     }
 
-    const [bookIds, setBookIds] = useState<string[]>([]);
-
-    const handleFilter = () => {
-        const filteredIds = filterBooks(selectedBooks, selectedAuthors, selectedThemes);
-        setBookIds(filteredIds);
-    };
-
     const booksIds: string[] = filterBooks(selectedBooks, selectedAuthors, selectedThemes);
 
     const handleExportCsv = async () => {
