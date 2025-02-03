@@ -21,16 +21,22 @@ function Historico() {
     firstName: `Nome`,
     lastName: `Sobrenome ${i + 1}`,
     phone: `Telefone ${i + 1}`,
-    email: `email ${i + 1}`,
+    email: `usuario${i + 1}@teste.com`,
     createdAt: `data de criação ${i + 1}`,
     updatedAt: ` data de update${i + 1}`,
+    loanDate: new Date(2025, 0, (i % 30) + 1).toISOString().split('T')[0], // Simula datas no mês de janeiro
+    returnDate: new Date(2025, 0, (i % 30) + 5).toISOString().split('T')[0], // 5 dias depois
+    loanDuration: (i % 30) + 1, // Duração entre 1 e 30 dias
   }));
   const [inputValue, setInputValue] = useState('');
+  const [dateFilter, setDateFilter] = useState(''); //~ variaveis para os inputs e filtros
+  const [loanDuration, setLoanDuration] = useState<number | null>(null);
+
   // const [users, setUsers] = useState<User[]>([]);
   // const [usersCount, setUsersCount] = useState(0);
   const [page, setPage] = useState(1);
-  const [showUsers, setShowUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState(mockUsers);
+  const [showUsers, setShowUsers] = useState<typeof mockUsers>([]);
 
   // const { getUsers } = useApi();  //~ pega dados da api
   // const { token } = useAuth();
@@ -53,32 +59,49 @@ function Historico() {
     setInputValue(e.target.value);
   };
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateFilter(e.target.value);
+  };
+
+  const handleLoanDurationChange = (details: { value: string }) => {
+    setLoanDuration(details.value ? parseInt(details.value, 10) : null);
+  };
+
+  //~ atualiza o pagination
   useEffect(() => {
-    const startIndex = (page - 1) * 10;
-    const endIndex = startIndex + 10;
+    const startIndex = (page - 1) * 20;
+    const endIndex = startIndex + 20;
     const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
     setShowUsers(paginatedUsers);
   }, [filteredUsers, page]);
 
+  //~ autaliza o array filtrado
   useEffect(() => {
     const lowerCaseInput = inputValue.toLowerCase();
-    const filtered = mockUsers.filter(
+    let filtered = mockUsers.filter(
       (user) =>
         user.firstName.toLowerCase().includes(lowerCaseInput) ||
         user.lastName.toLowerCase().includes(lowerCaseInput) ||
         user.email.toLowerCase().includes(lowerCaseInput),
     );
+    if (dateFilter) {
+      filtered = filtered.filter((user) => user.loanDate === dateFilter);
+    }
+    if (loanDuration !== null) {
+      filtered = filtered.filter((user) => user.loanDuration === loanDuration);
+    }
     setFilteredUsers(filtered);
     setPage(1);
-  }, [inputValue]);
+  }, [inputValue, dateFilter, loanDuration]);
 
   const rows = showUsers.map((users) => (
     <Table.Row key={users.id}>
       <Table.Cell>{users.firstName}</Table.Cell>
       <Table.Cell>{users.lastName}</Table.Cell>
       <Table.Cell>{users.email}</Table.Cell>
-      <Table.Cell>{users.createdAt}</Table.Cell>
-      <Table.Cell>{users.updatedAt}</Table.Cell>
+      <Table.Cell>{users.loanDate}</Table.Cell>
+      <Table.Cell>{users.returnDate}</Table.Cell>
+      <Table.Cell>{users.loanDuration}</Table.Cell>
     </Table.Row>
   ));
 
@@ -100,17 +123,23 @@ function Historico() {
               </InputGroup>
             </Field.Root>
             <Field.Root>
-              <Field.Label>Período de Tempo</Field.Label>
-              <InputGroup >
-                <Input type="date" width={'100%'} value={inputValue} onChange={handleInputChange} />
+              <Field.Label>Data do Empréstimo</Field.Label>
+              <InputGroup>
+                <Input type="date" width={'100%'} value={dateFilter} onChange={handleDateChange} />
               </InputGroup>
             </Field.Root>
             <Field.Root>
               <Field.Label>Duração de empréstimo</Field.Label>
               <InputGroup flex="0.5" endElement={'Dias'} width={'70%'}>
-              <NumberInputRoot defaultValue=""  min={0} max={360} allowMouseWheel>
-                <NumberInputField />
-              </NumberInputRoot>
+                <NumberInputRoot
+                  min={0}
+                  max={360}
+                  allowMouseWheel
+                  value={loanDuration?.toString() || ''}
+                  onValueChange={handleLoanDurationChange}
+                >
+                  <NumberInputField />
+                </NumberInputRoot>
               </InputGroup>
             </Field.Root>
           </Flex>
@@ -120,15 +149,16 @@ function Historico() {
                 <Table.ColumnHeader>Nome</Table.ColumnHeader>
                 <Table.ColumnHeader>Sobrenome</Table.ColumnHeader>
                 <Table.ColumnHeader>Email</Table.ColumnHeader>
-                <Table.ColumnHeader>Create</Table.ColumnHeader>
-                <Table.ColumnHeader>Uptade</Table.ColumnHeader>
+                <Table.ColumnHeader>Data do Empréstimo</Table.ColumnHeader>
+                <Table.ColumnHeader>Data de Devolução</Table.ColumnHeader>
+                <Table.ColumnHeader>Duração do Emrpréstimo</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
             <Table.Body>{rows}</Table.Body>
           </Table.Root>
           <PaginationRoot
             count={filteredUsers.length}
-            pageSize={10}
+            pageSize={20}
             page={page}
             onPageChange={(v) => handlePageChange(v.page)}
           >
