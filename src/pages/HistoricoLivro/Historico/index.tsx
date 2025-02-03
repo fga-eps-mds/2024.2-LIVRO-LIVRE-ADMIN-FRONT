@@ -1,4 +1,16 @@
-import { Box, HStack, Stack, Table, Input, Button, Flex, Field, NumberInputRoot } from '@chakra-ui/react';
+import {
+  Box,
+  HStack,
+  Stack,
+  Table,
+  Input,
+  Button,
+  Flex,
+  Field,
+  NumberInputRoot,
+  NativeSelectRoot,
+  NativeSelectField,
+} from '@chakra-ui/react';
 import { toaster } from '../../../components/ui/toaster';
 import { Checkbox } from '../../../components/ui/checkbox';
 import useApi from '../../../hooks/useApi';
@@ -25,11 +37,12 @@ function Historico() {
     createdAt: `data de criação ${i + 1}`,
     updatedAt: ` data de update${i + 1}`,
     loanDate: new Date(2025, 0, (i % 30) + 1).toISOString().split('T')[0], // Simula datas no mês de janeiro
-    returnDate: new Date(2025, 0, (i % 30) + 5).toISOString().split('T')[0], // 5 dias depois
+    returnDate: i % 2 === 0 ? new Date(2025, 0, (i % 30) + 5).toISOString().split('T')[0] : '', // 5 dias depois
     loanDuration: (i % 30) + 1, // Duração entre 1 e 30 dias
   }));
   const [inputValue, setInputValue] = useState('');
-  const [dateFilter, setDateFilter] = useState(''); //~ variaveis para os inputs e filtros
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState(''); //~ variaveis para os inputs e filtros
   const [loanDuration, setLoanDuration] = useState<number | null>(null);
 
   // const [users, setUsers] = useState<User[]>([]);
@@ -37,6 +50,8 @@ function Historico() {
   const [page, setPage] = useState(1);
   const [filteredUsers, setFilteredUsers] = useState(mockUsers);
   const [showUsers, setShowUsers] = useState<typeof mockUsers>([]);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); //~ state para ordenar a lista ascendente ou descendente
+  const [loanDurationCategory, setLoanDurationCategory] = useState<string | null>(null);
 
   // const { getUsers } = useApi();  //~ pega dados da api
   // const { token } = useAuth();
@@ -51,21 +66,22 @@ function Historico() {
   //     fetchUsers();
   // }, [page]);
 
+  const handleSort = () => {
+    //~ função para ordenar a lista
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    setFilteredUsers(
+      [...filteredUsers].sort((a, b) =>
+        sortOrder === 'asc'
+          ? new Date(a.loanDate).getTime() - new Date(b.loanDate).getTime()
+          : new Date(b.loanDate).getTime() - new Date(a.loanDate).getTime(),
+      ),
+    );
+  };
+
   const handlePageChange = (page: number) => {
     setPage(page);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateFilter(e.target.value);
-  };
-
-  const handleLoanDurationChange = (details: { value: string }) => {
-    setLoanDuration(details.value ? parseInt(details.value, 10) : null);
-  };
 
   //~ atualiza o pagination
   useEffect(() => {
@@ -84,26 +100,21 @@ function Historico() {
         user.lastName.toLowerCase().includes(lowerCaseInput) ||
         user.email.toLowerCase().includes(lowerCaseInput),
     );
-    if (dateFilter) {
-      filtered = filtered.filter((user) => user.loanDate === dateFilter);
+    if (startDate && endDate) {
+      filtered = filtered.filter((user) => user.loanDate >= startDate && user.loanDate <= endDate);
     }
-    if (loanDuration !== null) {
-      filtered = filtered.filter((user) => user.loanDuration === loanDuration);
+    if (loanDurationCategory) {
+      filtered = filtered.filter((user) => {
+        if (loanDurationCategory === 'curto') return user.loanDuration <= 7;
+        if (loanDurationCategory === 'medio') return user.loanDuration >= 8 && user.loanDuration <= 20;
+        if (loanDurationCategory === 'longo') return user.loanDuration > 20;
+        return true;
+      });
     }
+
     setFilteredUsers(filtered);
     setPage(1);
-  }, [inputValue, dateFilter, loanDuration]);
-
-  const rows = showUsers.map((users) => (
-    <Table.Row key={users.id}>
-      <Table.Cell>{users.firstName}</Table.Cell>
-      <Table.Cell>{users.lastName}</Table.Cell>
-      <Table.Cell>{users.email}</Table.Cell>
-      <Table.Cell>{users.loanDate}</Table.Cell>
-      <Table.Cell>{users.returnDate}</Table.Cell>
-      <Table.Cell>{users.loanDuration}</Table.Cell>
-    </Table.Row>
-  ));
+  }, [inputValue, startDate, endDate, loanDuration]);
 
   return (
     <Box padding="40px" overflowX="auto">
@@ -118,30 +129,35 @@ function Historico() {
                   type="text"
                   placeholder="Digite o nome do usuário."
                   value={inputValue}
-                  onChange={handleInputChange}
+                  onChange={(e) => setInputValue(e.target.value)}
                 />
               </InputGroup>
             </Field.Root>
             <Field.Root>
-              <Field.Label>Data do Empréstimo</Field.Label>
-              <InputGroup>
-                <Input type="date" width={'100%'} value={dateFilter} onChange={handleDateChange} />
-              </InputGroup>
+              <Field.Label> Data Inicial </Field.Label>
+              <Input type="date" width={'85%'} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </Field.Root>
             <Field.Root>
-              <Field.Label>Duração de empréstimo</Field.Label>
-              <InputGroup flex="0.5" endElement={'Dias'} width={'70%'}>
-                <NumberInputRoot
-                  min={0}
-                  max={360}
-                  allowMouseWheel
-                  value={loanDuration?.toString() || ''}
-                  onValueChange={handleLoanDurationChange}
-                >
-                  <NumberInputField />
-                </NumberInputRoot>
-              </InputGroup>
+              <Field.Label>Data Final</Field.Label>
+              <Input type="date" width={'85%'} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </Field.Root>
+            <Field.Root>
+              <Field.Label>Filtrar por Duração</Field.Label>
+              <NativeSelectRoot size="md" width="85%">
+                <NativeSelectField
+                  value={loanDurationCategory || ''}
+                  onChange={(e) => setLoanDurationCategory(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  <option value="curto">Curto prazo (até 7 dias)</option>
+                  <option value="medio">Médio prazo (8 a 20 dias)</option>
+                  <option value="longo">Longo prazo (mais de 20 dias)</option>
+                </NativeSelectField>
+              </NativeSelectRoot>
+            </Field.Root>
+            <Button size={'sm'} colorPalette={'gray'} variant={'subtle'} alignSelf={'center'} onClick={handleSort}>
+              Ordenar por Data
+            </Button>
           </Flex>
           <Table.Root size="lg" variant="outline" striped showColumnBorder>
             <Table.Header>
@@ -151,10 +167,21 @@ function Historico() {
                 <Table.ColumnHeader>Email</Table.ColumnHeader>
                 <Table.ColumnHeader>Data do Empréstimo</Table.ColumnHeader>
                 <Table.ColumnHeader>Data de Devolução</Table.ColumnHeader>
-                <Table.ColumnHeader>Duração do Emrpréstimo</Table.ColumnHeader>
+                <Table.ColumnHeader>Status</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
-            <Table.Body>{rows}</Table.Body>
+            <Table.Body>
+              {showUsers.map((user) => (
+                <Table.Row key={user.id}>
+                  <Table.Cell>{user.firstName}</Table.Cell>
+                  <Table.Cell>{user.lastName}</Table.Cell>
+                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>{user.loanDate}</Table.Cell>
+                  <Table.Cell>{user.returnDate || `Em posse de ${user.firstName + ' ' + user.lastName}`}</Table.Cell>
+                  <Table.Cell>{user.returnDate ? 'Devolvido' : 'Em posse'}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
           </Table.Root>
           <PaginationRoot
             count={filteredUsers.length}
