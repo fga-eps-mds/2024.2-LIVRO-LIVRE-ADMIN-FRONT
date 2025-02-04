@@ -7,25 +7,23 @@ import {
   Button,
   Flex,
   Field,
-  NumberInputRoot,
   NativeSelectRoot,
   NativeSelectField,
 } from '@chakra-ui/react';
-import { toaster } from '../../../components/ui/toaster';
-import { Checkbox } from '../../../components/ui/checkbox';
-import useApi from '../../../hooks/useApi';
-import { useEffect, useState } from 'react';
-import { User } from '../../../interfaces/user';
 import {
   PaginationItems,
   PaginationNextTrigger,
   PaginationPrevTrigger,
   PaginationRoot,
 } from '../../../components/ui/pagination';
+
+import { useEffect, useState } from 'react';
+import useApi from '../../../hooks/useApi';
+import { User } from '../../../interfaces/user';
 import { useAuth } from '../../../hooks/useAuth';
 import { InputGroup } from '../../../components/ui/input-group';
 import { IoSearchOutline } from 'react-icons/io5';
-import { NumberInputField } from '../../../components/ui/number-input';
+
 
 function Historico() {
   const mockUsers = Array.from({ length: 120 }, (_, i) => ({
@@ -36,9 +34,8 @@ function Historico() {
     email: `usuario${i + 1}@teste.com`,
     createdAt: `data de criação ${i + 1}`,
     updatedAt: ` data de update${i + 1}`,
-    loanDate: new Date(2025, 0, (i % 30) + 1).toISOString().split('T')[0], // Simula datas no mês de janeiro
-    returnDate: i % 2 === 0 ? new Date(2025, 0, (i % 30) + 5).toISOString().split('T')[0] : '', // 5 dias depois
-    loanDuration: (i % 30) + 1, // Duração entre 1 e 30 dias
+    loanDate: new Date(2025, 0, (i % 15) + 1).toISOString().split('T')[0], // Simula datas no mês de janeiro
+    returnDate: i % 2 === 0 ? new Date(2025, (i % 3), (i % 30) + 3).toISOString().split('T')[0] : '', // 5 dias depois
   }));
   const [inputValue, setInputValue] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -65,6 +62,14 @@ function Historico() {
   // useEffect(() => {
   //     fetchUsers();
   // }, [page]);
+  
+  function calculateLoanDuration(loanDate: string, returnDate: string): number {
+    if (returnDate === "") return 0; // Sem data de devolução, retorna 0
+    const loanDateObj = new Date(loanDate);
+    const returnDateObj = new Date(returnDate);
+    const diffInMs = returnDateObj.getTime() - loanDateObj.getTime();
+    return Math.ceil(diffInMs / (1000 * 60 * 60 * 24)); // Converte milissegundos para dias
+  }
 
   const handleSort = () => {
     //~ função para ordenar a lista
@@ -105,16 +110,18 @@ function Historico() {
     }
     if (loanDurationCategory) {
       filtered = filtered.filter((user) => {
-        if (loanDurationCategory === 'curto') return user.loanDuration <= 7;
-        if (loanDurationCategory === 'medio') return user.loanDuration >= 8 && user.loanDuration <= 20;
-        if (loanDurationCategory === 'longo') return user.loanDuration > 20;
+        if (!user.returnDate) return false;
+        const timePeriod = calculateLoanDuration(user.loanDate, user.returnDate)
+        if (loanDurationCategory === 'curto') return timePeriod <= 7;
+        if (loanDurationCategory === 'medio') return timePeriod >= 8 && timePeriod <= 20;
+        if (loanDurationCategory === 'longo') return timePeriod > 20;
         return true;
       });
     }
 
     setFilteredUsers(filtered);
     setPage(1);
-  }, [inputValue, startDate, endDate, loanDuration]);
+  }, [inputValue, startDate, endDate, loanDurationCategory]);
 
   return (
     <Box padding="40px" overflowX="auto">
