@@ -1,6 +1,7 @@
 import { Box, Stack, Text } from "@chakra-ui/react"
 import { Button } from "../ui/button"
 import { BsPerson, BsHouse } from 'react-icons/bs';
+import { FaFileExport } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -14,6 +15,7 @@ export const SideBar = () => {
   const tabs = [
     { label: 'Início', value: 'inicio', icon: <BsHouse /> },
     { label: 'Usuários', value: 'usuarios', icon: <BsPerson /> },
+    { label: 'Exportar Dados', value: 'exportar-dados', icon: <FaFileExport /> },
   ]
 
   return (
@@ -29,7 +31,7 @@ export const SideBar = () => {
             >
               <Stack align='center'>
                 {tab.icon}
-                <Text textAlign='center'>{tab.label}</Text>
+                <Text textAlign='center' lineClamp="2">{tab.label}</Text>
               </Stack>
             </Button>
           ))}

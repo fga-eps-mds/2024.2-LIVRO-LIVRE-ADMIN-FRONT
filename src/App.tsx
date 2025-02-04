@@ -8,6 +8,7 @@ import { Toaster } from "./components/ui/toaster"
 import PrivateRoute from './PrivateRoute';
 import SignIn from "./pages/SignIn"
 import Users from "./pages/Users"
+import ExportarDados from "./pages/ExportData"
 
 function App() {
   return (
@@ -17,9 +18,10 @@ function App() {
           <Routes>
             <Route path="*" element={<NotFound />} />
             <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-            <Route path="/login" element={<SignIn />} />
+            <Route path="/login" element={<PrivateRoute><SignIn /></PrivateRoute>} />
             <Route path="/inicio" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/usuarios" element={<PrivateRoute><Users /></PrivateRoute>} />
+            <Route path="/exportar-dados" element={<PrivateRoute><ExportarDados /></PrivateRoute>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

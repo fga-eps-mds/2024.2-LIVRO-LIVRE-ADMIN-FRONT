@@ -16,3 +16,12 @@ export interface AdminUser {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Book {
+  id: string;
+  titulo: string;
+  autor: string;
+  tema: string;
+  rating: number;
+  imageUrl: string;
+}
