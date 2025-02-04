@@ -40,7 +40,6 @@ function Historico() {
   const [inputValue, setInputValue] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState(''); //~ variaveis para os inputs e filtros
-  const [loanDuration, setLoanDuration] = useState<number | null>(null);
 
   // const [users, setUsers] = useState<User[]>([]);
   // const [usersCount, setUsersCount] = useState(0);
@@ -64,7 +63,7 @@ function Historico() {
   // }, [page]);
   
   function calculateLoanDuration(loanDate: string, returnDate: string): number {
-    if (returnDate === "") return 0; // Sem data de devolução, retorna 0
+    if (!returnDate) return 0; // Sem data de devolução, retorna 0
     const loanDateObj = new Date(loanDate);
     const returnDateObj = new Date(returnDate);
     const diffInMs = returnDateObj.getTime() - loanDateObj.getTime();
