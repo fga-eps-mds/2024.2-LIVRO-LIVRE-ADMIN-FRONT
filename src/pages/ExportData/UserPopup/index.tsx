@@ -1,6 +1,6 @@
 import { Box, HStack, Stack, Table, Input, Button } from '@chakra-ui/react';
-import { toaster } from "../../../components/ui/toaster"
-import { Checkbox } from "../../../components/ui/checkbox"
+import { toaster } from "../../../components/ui/toaster";
+import { Checkbox } from "../../../components/ui/checkbox";
 import useApi from '../../../hooks/useApi';
 import { useEffect, useState } from 'react';
 import { User } from '../../../interfaces/user';
@@ -22,13 +22,9 @@ interface UserPopupProps {
 function UserPopup(props: Readonly<UserPopupProps>) {
     const { onSelectionChange, selectedUsers } = props;
     const [inputValue, setInputValue] = useState('');
-
     const [users, setUsers] = useState<User[]>([]);
     const [usersCount, setUsersCount] = useState(0);
     const [page, setPage] = useState(1);
-    const [showUsers, setShowUsers] = useState<User[]>([]);
-    const [filteredUsers, setFilteredUsers] = useState(users);
-
     const { getUsers } = useApi();
     const { token } = useAuth();
 
@@ -43,8 +39,8 @@ function UserPopup(props: Readonly<UserPopupProps>) {
     }, [page]);
 
     const [selection, setSelection] = useState<string[]>(selectedUsers);
-    const hasSelection = selection.length > 0
-    const indeterminate = hasSelection && selection.length < usersCount
+    const hasSelection = selection.length > 0;
+    const indeterminate = hasSelection && selection.length < usersCount;
 
     const handleSaveSelection = () => {
         setSelection((prevSelection) => [...prevSelection]);
@@ -52,7 +48,7 @@ function UserPopup(props: Readonly<UserPopupProps>) {
         toaster.create({
             description: "Arquivo salvo com sucesso.",
             type: "success",
-        })
+        });
     };
 
     const handlePageChange = (page: number) => {
@@ -61,53 +57,44 @@ function UserPopup(props: Readonly<UserPopupProps>) {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
+        setPage(1); 
     };
 
+    const filteredUsers = users.filter(user =>
+        user.firstName.toLowerCase().includes(inputValue.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(inputValue.toLowerCase()) ||
+        user.email.toLowerCase().includes(inputValue.toLowerCase())
+    );
 
-    useEffect(() => {
-        const startIndex = (page - 1) * 5;
-        const endIndex = startIndex + 5;
-        const paginatedUsers = users.slice(startIndex, endIndex);
-        setShowUsers(paginatedUsers);
-    }, [filteredUsers, page]);
+    const startIndex = (page - 1) * 10;
+    const endIndex = startIndex + 10;
+    const showUsers = filteredUsers.slice(startIndex, endIndex);
 
-    useEffect(() => {
-        const lowerCaseInput = inputValue.toLowerCase();
-        const filtered = users.filter(
-            user =>
-                user.firstName.toLowerCase().includes(lowerCaseInput) ||
-                user.lastName.toLowerCase().includes(lowerCaseInput) ||
-                user.email.toLowerCase().includes(lowerCaseInput)
-        );
-        setFilteredUsers(filtered);
-        setPage(1);
-    }, [inputValue]);
-
-    const rows = showUsers.map((users) => (
+    const rows = showUsers.map((user) => (
         <Table.Row
-            key={users.id}
-            data-selected={selection.includes(users.email) ? "" : undefined}
+            key={user.id}
+            data-selected={selection.includes(user.id) ? "" : undefined}
         >
             <Table.Cell>
                 <Checkbox
                     top="1"
                     aria-label="Select row"
-                    checked={selection.includes(users.email)}
+                    checked={selection.includes(user.id)}
                     onCheckedChange={(changes) => {
                         setSelection((prev) =>
                             changes.checked
-                                ? [...prev, users.email]
-                                : prev.filter((email) => email !== users.email),
-                        )
+                                ? [...prev, user.id]
+                                : prev.filter((id) => id !== user.id),
+                        );
                     }}
                 />
             </Table.Cell>
-            <Table.Cell>{users.firstName}</Table.Cell>
-            <Table.Cell>{users.lastName}</Table.Cell>
-            <Table.Cell>{users.phone}</Table.Cell>
-            <Table.Cell>{users.email}</Table.Cell>
+            <Table.Cell>{user.firstName}</Table.Cell>
+            <Table.Cell>{user.lastName}</Table.Cell>
+            <Table.Cell>{user.phone}</Table.Cell>
+            <Table.Cell>{user.email}</Table.Cell>
         </Table.Row>
-    ))
+    ));
 
     return (
         <Box padding='40px' overflowX="auto">
@@ -131,8 +118,8 @@ function UserPopup(props: Readonly<UserPopupProps>) {
                                         checked={indeterminate ? "indeterminate" : selection.length > 0}
                                         onCheckedChange={(changes) => {
                                             setSelection(
-                                                changes.checked ? filteredUsers.map((user) => user.email) : [],
-                                            )
+                                                changes.checked ? filteredUsers.map((user) => user.id) : [],
+                                            );
                                         }}
                                     />
                                 </Table.ColumnHeader>
@@ -172,4 +159,4 @@ function UserPopup(props: Readonly<UserPopupProps>) {
     );
 }
 
-export default UserPopup
+export default UserPopup;
