@@ -1,4 +1,4 @@
-import { Button, Text, Stack, HStack } from "@chakra-ui/react";
+import { Button, Text, Stack } from "@chakra-ui/react";
 import {
     PopoverArrow,
     PopoverBody,
