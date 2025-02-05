@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useMemo } from "react"
-import { API_BASE_URL } from "../../config/environment";
+import { API_BASE_URL, API_BOOKS_URL, API_RENTALS_URL } from "../../config/environment";
 import { User } from "../../interfaces/user";
 
 const createApiInstance = (url: string) => {
@@ -22,8 +22,11 @@ const getDefaultErrorUseAPIMessage = (err: any) => {
 
 const useApi = () => {
   const api = useMemo(
-    () =>
-      createApiInstance(API_BASE_URL),
+    () => ({
+      base: createApiInstance(API_BASE_URL),
+      books: createApiInstance(API_BOOKS_URL),
+      rentals: createApiInstance(API_RENTALS_URL),
+    }),
     [],
   );
 
@@ -36,7 +39,7 @@ const useApi = () => {
       refreshToken: string;
     } }> => {
       return new Promise((resolve) => {
-        api
+        api.base
           .post('/auth/signin', {
             ...data,
             role: 'admin',
@@ -53,7 +56,7 @@ const useApi = () => {
       total: number,
     } }> => {
       return new Promise((resolve) => {
-        api
+        api.base
           .get('/users', {
             params: {
               perPage: data.perPage,
